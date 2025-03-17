@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LuminOS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        color: #000;
+        transition: background-color 0.5s, color 0.5s;
+    }
+
+    body.dark-mode {
+        background-color: #242424;
+        color: #fff;
+    }
+
+    #desktop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: inherit;
+    }
+
+    #time {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 5em;
+        text-align: center;
+    }
+
+    #message {
+        position: absolute;
+        top: calc(20% + 100px);
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.5em;
+        text-align: center;
+    }
+
+    #apps {
+        position: absolute;
+        top: calc(50% + 140px);
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        text-align: center;
+        font-size: 1.2em;
+    }
+
+    #apps-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .app {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        cursor: pointer;
+        font-size: 1em;
+        transition: font-size 0.3s;
+    }
+
+    .app:hover {
+        font-size: 1.2em;
+    }
+
+    #menu-toggle {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: width 0.3s, height 0.3s;
+    }
+
+    .menu-open #apps {
+        display: block;
+    }
+
+    .menu-open #menu-toggle {
+        width: 36px;
+        height: 36px;
+    }
+
+    #battery {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1.5em;
+    }
+
+    #dark-mode-toggle {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 1.5em;
+        cursor: pointer;
+    }
+
+    #calculator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 1000;
+    }
+
+    #calculator.dark-mode {
+        background-color: #242424;
+        color: #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .calculator-button {
+        width: 50px;
+        height: 50px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1.2em;
+        cursor: pointer;
+        background-color: #f0f0f0;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .calculator-button:hover {
+        background-color: #ccc;
+    }
+
+    #calculator input {
+        width: calc(100% - 10px);
+        margin-bottom: 10px;
+        padding: 5px;
+        font-size: 1.2em;
+    }
+
+  .handle-bar {
+      position: absolute;
+      bottom: 0px;
+      top: 0px;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background-color: #333; /* Dark color */
+      border-radius: 5px; /* Rounded corners */
+      cursor: grab;
+  }
+
+    .handle-bar.dark-mode {
+        background-color: #fff;
+    }
+
+    #notes {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 1000;
+    }
+
+    #notes.dark-mode {
+        background-color: #242424;
+        color: #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    #notes textarea {
+        width: calc(100% - 10px);
+        height: 200px;
+        margin-bottom: 10px;
+        padding: 5px;
+        font-size: 1.2em;
+        resize: none;
+    }
+
+    .notes-button {
+        width: 100%;
+        padding: 10px;
+        font-size: 1em;
+        cursor: pointer;
+        background-color: #f0f0f0;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .notes-button:hover {
+        background-color: #ccc;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: transparent;
+        border: none;
+        font-size: 1em;
+        cursor: pointer;
+    }
+  .button-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+  }
+
+  .notes-button {
+      margin: 0 5px;
+  }
+</style>
+</head>
+<body>
+<div id="desktop">
+    <div id="time"></div>
+    <div id="message"></div>
+    <div id="apps">
+        <ul id="apps-list">
+            <li class="app">Calculator</li>
+            <li class="app">Calendar</li>
+            <li class="app">Contacts</li>
+            <li class="app">Notes</li>
+            <li class="app">Settings</li>
+        </ul>
+    </div>
+    <div id="menu-toggle"></div>
+    <div id="battery"></div>
+    <div id="dark-mode-toggle"><i class="fas fa-moon"></i></div>
+    <div id="calculator">
+        <button class="close-button" onclick="closeCalculator()">X</button>
+        <input type="text" id="calc-input" readonly>
+        <div>
+            <button class="calculator-button" onclick="appendToInput('1')">1</button>
+            <button class="calculator-button" onclick="appendToInput('2')">2</button>
+            <button class="calculator-button" onclick="appendToInput('3')">3</button>
+            <button class="calculator-button" onclick="appendToInput('+')">+</button>
+        </div>
+        <div>
+            <button class="calculator-button" onclick="appendToInput('4')">4</button>
+            <button class="calculator-button" onclick="appendToInput('5')">5</button>
+            <button class="calculator-button" onclick="appendToInput('6')">6</button>
+            <button class="calculator-button" onclick="appendToInput('-')">-</button>
+        </div>
+        <div>
+            <button class="calculator-button" onclick="appendToInput('7')">7</button>
+            <button class="calculator-button" onclick="appendToInput('8')">8</button>
+            <button class="calculator-button" onclick="appendToInput('9')">9</button>
+            <button class="calculator-button" onclick="appendToInput('*')">*</button>
+        </div>
+        <div>
+            <button class="calculator-button" onclick="appendToInput('0')">0</button>
+            <button class="calculator-button" onclick="appendToInput('.')">.</button>
+            <button class="calculator-button" onclick="clearInput()">C</button>
+            <button class="calculator-button" onclick="calculate()">=</button>
+        </div>
+        <div class="handle-bar"></div>
+    </div>
+  <div id="notes">
+      <button class="close-button" onclick="closeNotes()">X</button>
+      <textarea id="notes-textarea"></textarea>
+      <div class="button-row">
+          <button class="notes-button" onclick="saveNotes()"><i class="fas fa-save"></i></button>
+          <button class="notes-button" onclick="uploadNotes()"><i class="fas fa-upload"></i></button>
+          <button class="notes-button" onclick="toggleBold()"><i class="fas fa-bold"></i></button>
+          <button class="notes-button" onclick="toggleUnderline()"><i class="fas fa-underline"></i></button>
+          <button class="notes-button" onclick="toggleItalic()"><i class="fas fa-italic"></i></button>
+      </div>
+      <div class="handle-bar"></div>
+  </div>
+</div>
+<script>
+  let notesTextarea = document.getElementById('notes-textarea');
+  let isBold = false;
+  let isUnderline = false;
+  let isItalic = false;
+
+  function saveNotes() {
+      const notesText = notesTextarea.value;
+      const blob = new Blob([notesText], {type: 'text/plain'});
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'notes.txt';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+  }
+
+  function uploadNotes() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.txt';
+      input.onchange = function(event) {
+          const file = event.target.files[0];
+          const reader = new FileReader();
+          reader.onload = function() {
+              notesTextarea.value = reader.result;
+          };
+          reader.readAsText(file);
+      };
+      input.click();
+  }
+
+  function toggleBold() {
+      if (isBold) {
+          notesTextarea.style.fontWeight = 'normal';
+      } else {
+          notesTextarea.style.fontWeight = 'bold';
+      }
+      isBold = !isBold;
+  }
+
+  function toggleUnderline() {
+      if (isUnderline) {
+          notesTextarea.style.textDecoration = 'none';
+      } else {
+          notesTextarea.style.textDecoration = 'underline';
+      }
+      isUnderline = !isUnderline;
+  }
+
+  function toggleItalic() {
+      if (isItalic) {
+          notesTextarea.style.fontStyle = 'normal';
+      } else {
+          notesTextarea.style.fontStyle = 'italic';
+      }
+      isItalic = !isItalic;
+  }
+
+  function closeNotes() {
+      document.getElementById('notes').style.display = 'none';
+  }
+  let calculatorWindow = document.getElementById('calculator');
+    let notesWindow = document.getElementById('notes');
+
+    let isDraggingCalc = false;
+    let isDraggingNotes = false;
+    let offsetCalc = {x: 0, y: 0};
+    let offsetNotes = {x: 0, y: 0};
+
+    calculatorWindow.addEventListener('mousedown', startDragCalc);
+    notesWindow.addEventListener('mousedown', startDragNotes);
+
+    function startDragCalc(e) {
+        if (e.target.classList.contains('handle-bar')) {
+            isDraggingCalc = true;
+            offsetCalc.x = e.clientX - calculatorWindow.getBoundingClientRect().left;
+            offsetCalc.y = e.clientY - calculatorWindow.getBoundingClientRect().top;
+            document.addEventListener('mousemove', dragCalc);
+            document.addEventListener('mouseup', stopDragCalc);
+        }
+    }
+
+    function startDragNotes(e) {
+        if (e.target.classList.contains('handle-bar')) {
+            isDraggingNotes = true;
+            offsetNotes.x = e.clientX - notesWindow.getBoundingClientRect().left;
+            offsetNotes.y = e.clientY - notesWindow.getBoundingClientRect().top;
+            document.addEventListener('mousemove', dragNotes);
+            document.addEventListener('mouseup', stopDragNotes);
+        }
+    }
+
+    function dragCalc(e) {
+        if (isDraggingCalc) {
+            let x = e.clientX - offsetCalc.x;
+            let y = e.clientY - offsetCalc.y;
+            calculatorWindow.style.left = x + 'px';
+            calculatorWindow.style.top = y + 'px';
+        }
+    }
+
+    function dragNotes(e) {
+        if (isDraggingNotes) {
+            let x = e.clientX - offsetNotes.x;
+            let y = e.clientY - offsetNotes.y;
+            notesWindow.style.left = x + 'px';
+            notesWindow.style.top = y + 'px';
+        }
+    }
+
+    function stopDragCalc() {
+        isDraggingCalc = false;
+        document.removeEventListener('mousemove', dragCalc);
+        document.removeEventListener('mouseup', stopDragCalc);
+    }
+
+    function stopDragNotes() {
+        isDraggingNotes = false;
+        document.removeEventListener('mousemove', dragNotes);
+        document.removeEventListener('mouseup', stopDragNotes);
+    }
+
+    function updateTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+        document.getElementById('time').textContent = timeString;
+    }
+
+    function updateMessage() {
+        const messages = [
+            "Welcome to LuminOS.",
+            "Stay productive.",
+            "Enjoy simplicity.",
+            "Keep it simple.",
+            "Focus on what matters.",
+            "Make it happen.",
+            "Embrace simplicity.",
+            "Work smarter, not harder.",
+            "Be efficient.",
+            "Stay focused."
+        ];
+        const randomIndex = Math.floor(Math.random() * messages.length);
+        document.getElementById('message').textContent = messages[randomIndex];
+    }
+
+    function updateBatteryStatus() {
+        navigator.getBattery().then(function(battery) {
+            const batteryPercentage = Math.floor(battery.level * 100);
+            document.getElementById('battery').textContent = `${batteryPercentage}%`;
+        });
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    updateMessage();
+
+    updateBatteryStatus();
+    navigator.getBattery().then(function(battery) {
+        battery.addEventListener('levelchange', updateBatteryStatus);
+    });
+
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+        document.getElementById('desktop').classList.toggle('menu-open');
+    });
+
+    document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        document.getElementById('calculator').classList.toggle('dark-mode');
+        document.getElementById('notes').classList.toggle('dark-mode');
+    });
+
+    const apps = document.querySelectorAll('.app');
+    apps.forEach(app => {
+        app.addEventListener('click', function() {
+            if (app.textContent === 'Calculator') {
+                document.getElementById('calculator').style.display = 'block';
+            } else if (app.textContent === 'Notes') {
+                document.getElementById('notes').style.display = 'block';
+            }
+            // Open or do something with other apps
+        });
+    });
+
+    let calcInput = document.getElementById('calc-input');
+
+    function appendToInput(value) {
+        calcInput.value += value;
+    }
+
+    function clearInput() {
+        calcInput.value = '';
+    }
+
+    function calculate() {
+        try {
+            calcInput.value = eval(calcInput.value);
+        } catch (error) {
+            calcInput.value = 'Error';
+        }
+    }
+
+    function saveNotes() {
+        const notesText = document.getElementById('notes-textarea').value;
+        const blob = new Blob([notesText], {type: 'text/plain'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'notes.txt';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function closeCalculator() {
+        document.getElementById('calculator').style.display = 'none';
+    }
+
+    function closeNotes() {
+        document.getElementById('notes').style.display = 'none';
+    }
+</script>
+</body>
+</html>
